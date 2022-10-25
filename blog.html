@@ -1,0 +1,60 @@
+Collaboration between colleagues is important in today's business world. After the pandemics and with the massive introduction or remote work, being able to share opinions is something that many companies are looking after. Giving an evaluation is one way to share your feedback. You most probably rated a product you bought on your favorite online platform or a movie that you've watched on a streaming platform. Adding this rating functionality is something that is sometimes looked after when using Visual Analytics reports. In this article, I will drive you through the steps to introduce a rating component in a Visual Analytics report and display the collected results. <!--more-->
+<h2>What do you need?</h2>
+Unfortunately, SAS Visual Analytics doesn't provide a rating component out-of-the-box. It means that you should create it yourself. Luckily, SAS Visual Analytics has the Data-Driven Content object. This object can be added to any report to embed an external web page. The benefit of the Data-Driven Content (DDC) object is the data exchange capability that it provides. By data exchange, I mean that the DDC object can retrieve data used in the report and send data to the report. The DDC object can be considered as custom object where you can define your business logic and most importantly the visualization that you want. The DDC object is often used to embed visualizations that are not available in the SAS Visual Analytics graph objects. You can for example use to embed an organization chart, a sunburst chart, or any other visualization which are available in JavaScript libraries like <a href="https://d3js.org/">D3js</a>, <a href="https://developers.google.com/chart/">Google Charts</a>, or <a href="https://canvasjs.com/">Canvas JS</a> to name a few. As you may have noticed, these libraries are based on the JavaScript language, and this is the technology you should use to integrate the Visual Analytics data in an external web page which will then be referenced in the DDC object within Visual Analytics.
+
+To summarize, to integrate a Data-Driven Content object in your Visual Analytics report, you need:
+<ul>
+ 	<li>A web page with some JavaScript code</li>
+ 	<li>A web server to host and render that page</li>
+</ul>
+What you will see in this article is that you can also use SAS code to process some data on the CAS server.
+
+If you want to get more information and ideas about using Data-Driven Content object in SAS Visual Analytics, please have a look to the following articles:
+<ul>
+ 	<li><a href="https://communities.sas.com/t5/forums/searchpage/tab/message?advanced=false&amp;allow_punctuation=false&amp;filter=includeTkbs,location&amp;include_tkbs=true&amp;location=tkb-board:library&amp;q=%20%23D3Thursday">D3Thursday - SAS Support Communities</a></li>
+ 	<li><a href="https://communities.sas.com/t5/SAS-Communities-Library/Enhance-VA-reports-with-dynamic-infographics/ta-p/618850">Enhance VA reports with dynamic infographics - SAS Support Communities</a></li>
+ 	<li><a href="https://communities.sas.com/t5/forums/searchpage/tab/message?filter=includeTkbs,location&amp;q=DDC&amp;noSynonym=false&amp;include_tkbs=true&amp;location=tkb-board:library&amp;collapse_discussion=true">Other DDC related articles - SAS Support Communities</a></li>
+</ul>
+&nbsp;
+<h2>What will the report look like?</h2>
+If you follow along with this article, your final web page will look like this:
+
+<a href="http://sww.sas.com/blogs/wp/gate/files/2022/10/xab_CarsRating_finalReport.png"><img class="alignnone size-full wp-image-63175" src="http://sww.sas.com/blogs/wp/gate/files/2022/10/xab_CarsRating_finalReport.png" alt="" width="1238" height="943" /></a>
+
+On the left-hand side, you have a list table which is used to select a car model. When the user selects a row in the list table the form in the Data-Driven Content (on the top right) is populated with the Make and Model information. The user selects a rating level and saves the evaluation. To save the evaluation, a SAS Viya Job is called and saves the evaluation in table which contains all the ratings. The rating table is then used to populate the bar chart which displays the Maker's rating in the bottom right.
+
+&nbsp;
+<h2>Designing the report</h2>
+Now that you have seen the report, I hope you are willing to know how it is implemented.
+
+Here are the steps:
+<ol>
+ 	<li>Load the SASHELP.CARS data into CAS.</li>
+ 	<li>Create a new report based on CARS table.</li>
+ 	<li>Add a List Table object to the report.</li>
+ 	<li>Add Make, Model and Invoice variables to the List Table object.</li>
+ 	<li>Add a Data-Driven Content object to the right of the List Table object.</li>
+ 	<li>Add Make and Model variables to the Data-Driven Content object.</li>
+ 	<li>Add a Bar Chart object under the Data-Driven Content object.</li>
+ 	<li>Select the List Table object and define a new action to link the List table object to the Data-Driven Content object.</li>
+ 	<li>Validate the defined action by clicking on a row in the List Table object. The Data-Driven Content object should only display the selected car model.</li>
+</ol>
+When done, your report should look like this.
+
+<a href="http://sww.sas.com/blogs/wp/gate/files/2022/10/xab_CarsRating_buildingReport.png"><img class="alignnone size-full wp-image-63178" src="http://sww.sas.com/blogs/wp/gate/files/2022/10/xab_CarsRating_buildingReport.png" alt="" width="1238" height="943" /></a>
+
+Please note that no variable is assigned to the Bar Chart object as it will use another CAS table which is not yet created.
+
+&nbsp;
+<h2>Building the web page</h2>
+SAS provides JavaScript code to integrate data coming from the Visual Analytics report into a web page. The code is available on <a href="https://github.com/sassoftware/sas-visualanalytics-thirdpartyvisualizations/blob/master/util/messagingUtil.js">GitHub</a>. To ease the development process, and to build a nice-looking form, Bootstrap and jQuery will be used. These are two popular JavaScript libraries which can be integrated easily from a CDN location or downloaded from:
+<ul>
+ 	<li><a href="https://getbootstrap.com/docs/5.0/getting-started/download/">Bootstrap</a></li>
+ 	<li><a href="https://jquery.com/download/">jQuery</a></li>
+ 	<li><a href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">FontAwesome</a></li>
+</ul>
+I chose to download the files instead of using the CDN option. If you choose the CDN option, you should make sure that the end-users have internet access when consuming the report.
+
+The top part of the HTML code is the following:
+
+&nbsp;
